@@ -15,9 +15,11 @@ A tool to download Facebook Messenger Stickers and convert them into gif.
 ![alt text](https://i.imgur.com/UeKnXNn.png)
 
 
-3- Paste it into the terminal, give it a name and determine the duration of the GIF:
+3- Paste it into the terminal, give it a name and determine the duration between the frames of the GIF:
 
 ![alt text](https://i.imgur.com/eeJBIko.png)
 
 
 4- Voilà:
+
+![alt text](https://i.imgur.com/b2bB9yH.gif)
