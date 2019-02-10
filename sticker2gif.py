@@ -83,7 +83,8 @@ def GifImg():
         frame = Image.open(i)
         frames.append(frame)
     name = input('Sticker Name: ')
-    duri = int(input('Duration [1-100]: '))
+    duri = int(input('Duration between frames [1-100]: '))
+    os.chdir(os.getcwd()[:-4])
     frames[0].save(name + '.gif',
                 save_all = True,
                 append_images = frames[1:],
@@ -92,17 +93,14 @@ def GifImg():
 
 def Clean():
     for i in os.listdir('temp\\'):
-        if not i.endswith('.gif'):
-            os.remove(i)
+        os.remove('temp\\' + i)
     os.rmdir('temp\\')
 
 def Main():
-    gifDir = 'Sticker2Gif\\'
+    gifDir = 'Sticker2Gif\\temp\\'
     if not os.path.exists(gifDir):
-        os.mkdir(gifDir)
+        os.makedirs(gifDir)
     os.chdir(gifDir)
-    if not os.path.exists('temp\\'):
-        os.mkdir('temp\\')
     GetImg()
     CutImg()
     GifImg()
