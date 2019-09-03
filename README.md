@@ -3,6 +3,14 @@
 A tool to download Facebook Messenger Stickers and convert them into gif.
 
 
+# Dependencies
+
+`pip install Pillow`
+
+or
+
+[Get it from here](https://pypi.org/project/Pillow/)
+
 # How to use
 
 1- Inspect the sticker you want to save:
