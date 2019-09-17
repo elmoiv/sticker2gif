@@ -1,155 +1,108 @@
-#       sticker2gif.py, a Facebook messenger animated sticker downloader
-#
-#       Copyright 2019 Khaled El-Morshedy <elmoiv>
-#
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License 3 as published by
-#       the Free Software Foundation.
-#
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-
-import os, urllib.request
+import os, ai
 from PIL import Image
+from tools import *
 
-def GetImg():
-    try:
-        urllib.request.urlretrieve(input('\nURL: ') , 'img.png')
-    except:
-        # I am too lazy to catch each error ~(o.o)~
-        print('\nBad Link!\n')
-        # Recurse to try again with new url
-        GetImg()
+class StickertoGif:
+    def __init__(self, img_path, save_path, log=False):
+        self.img_path = img_path
+        self.path = CheckPath(save_path)
+        self.log = log
+        Clean(self.path)
+        os.chdir(self.path)
+        os.makedirs('temp', exist_ok=True)
+        os.chdir('temp')
 
-def AI(test):
-    lst = [[], []]
-
-    width, height = test.size
-
-    nTest = test.convert('RGB')
- 
-    for w in range(0, width, 10):
-        lstWH = []
-        for wh in range(height):
-            lstWH.append(sum(nTest.getpixel((w, wh))))
-        detect = int(''.join(str(i) for i in lstWH))
-        if not detect:
-            lst[0].append('^')
+    def getImg(self):
+        choice = PathOrUrl(self.img_path)
+        img = None
+        if choice:
+            img = self.img_path
+        elif choice is False:
+            Log('\nDownloading...', self.log)
+            img = Download(self.img_path)
         else:
-            lst[0].append('_')
-
-    for h in range(0, height, 10):
-        lstHW = []
-        for hw in range(width):
-            lstHW.append(sum(nTest.getpixel((hw, h))))
-        detect = int(''.join(str(i) for i in lstHW))
-        if not detect:
-            lst[1].append('^')
-        else:
-            lst[1].append('_')
-
-    return [len([x for x in ''.join(lst[lst.index(i)]).split('_') if x != '']) - 1 for i in lst]
-
-def CutImg():
-
-    sticker = Image.open('img.png')
-
-    size = sticker.size
-
-    # Using basic AI to determine mini images in each row and column
-    wd_pc, ht_pc = AI(sticker)
-
-    # Getting the fixed size of each mini image
-    x, y = round(size[0]/wd_pc), round(size[1]/ht_pc)
-
-    # Setting up cordinates
-    cd = (0, 0, x, y)
-
-    n = 0
-    for _ in range(ht_pc):
-
-        for _ in range(wd_pc):
-
-            # Cropping the mini image
-            minSticker = sticker.crop(cd)
+            raise Exception('Invalid Image input!')
+        return Image.open(img)
             
-            colors = minSticker.convert('RGB').getcolors()
-            if colors == None:
-                colors = [(0, (1, 0, 0))]
+
+    def cutImg(self):
+        sticker = self.getImg()
+
+        size = sticker.size
+
+        # Using basic AI to determine mini images in each row and column
+        Log('\nAI Running...', self.log)
+        AI = ai.Brain(sticker)
+        columns, rows = AI.run()
+        Log('\nRows: {}, Columns: {}'.format(rows, columns), self.log)
+
+        # Getting the fixed size of each mini image
+        x, y = round(size[0]/columns), round(size[1]/rows)
+
+        # Setting up cordinates
+        cd = (0, 0, x, y)
+
+        Log('\nCutting process...', self.log)
+        n = 0
+        for _ in range(rows):
+
+            for _ in range(columns):
+
+                # Cropping the mini image
+                minSticker = sticker.crop(cd)
+                
+                colors = minSticker.convert('RGB').getcolors()
+                if colors == None:
+                    colors = [(0, (1, 0, 0))]
+                
+                # Detecting empty mini images and bypassing them
+                if not (sum(colors[0][1]) == 0 and len(colors) == 1):
+                    # minSticker.mode = RGBA so that we create a white background
+                    # of same mode to avoid black background when converting to gif
+                    Image.alpha_composite(Image.new('RGBA', (x, y), (255, 255, 255)), minSticker).save(str(n) + '.png')
+                    n += 1
+                
+                # Cordinates of the next image in same row
+                cd = (cd[0] + x, cd[1], cd[2] + x, cd[3])
             
-            # Detecting empty mini images
-            if not (sum(colors[0][1]) == 0 and len(colors) == 1):
-                # minSticker.mode = RGBA so that we create a white background
-                # of same mode to avoid black background when converting to gif
-                Image.alpha_composite(Image.new('RGBA', (x, y), (255, 255, 255)), minSticker).save(str(n) + '.png')
-                n += 1
-            
-            # Cordinates of the next image in same row
-            cd = (cd[0] + x, cd[1], cd[2] + x, cd[3])
+            # Cordinates of the first image in the next row
+            cd = (0, cd[1] + y, x, cd[3] + y)
+
+    def gifImg(self, name, duration):
+        pics = [i for i in os.listdir() if i.split('.')[0].isdecimal()]
         
-        # Cordinates of the first image in the next row
-        cd = (0, cd[1] + y, x, cd[3] + y)
+        # Sorting pics ascendingly
+        pics.sort(key = lambda x: int(x.split('.')[0]))
 
-def GifImg():
+        frames = []
+        for i in pics:
+            frame = Image.open(i)
+            frames.append(frame)
+        
+        # Return to main dic
+        os.chdir(os.getcwd()[:-4])
 
-    pics = [i for i in os.listdir() if i.split('.')[0].isdecimal()]
-    
-    # Sorting Pics Ascendingly
-    pics.sort(key = lambda x: int(x.split('.')[0]))
+        # Correct any incorrect input
+        name = Rename(name, self.path)
 
-    frames = []
-    for i in pics:
-        frame = Image.open(i)
-        frames.append(frame)
-    
-    # Return to main dic (excluding "temp\\" by [:-4])
-    os.chdir(os.getcwd()[:-4])
-
-    # Correct any incorrect input
-    name = input('\nSticker Name: ')
-    while os.path.exists(f'{name}.gif') or name == '':
-        print('Name exists or Empty!\n')
-        name = input('\nSticker Name: ')
-
-    # Catch Stupid Inputs
-    try:
-        duri = int(input('\nDuration between frames [1-100]: '))
-        if not 0 < duri < 101:
+        # Catch Stupid Inputs
+        try:
+            duri = int(duration)
+            if not 0 < duri < 101:
+                duri = 60
+        except:
             duri = 60
-    except:
-        duri = 60
-    
-    # Create GIFS
-    frames[0].save(name + '.gif',
-                save_all = True,
-                append_images = frames[1:],
-                duration = duri,
-                loop = 0)
+        
+        # Create GIF
+        Log('\nCreating Gif...', self.log)
+        frames[0].save(name + '.gif',
+                    save_all = True,
+                    append_images = frames[1:],
+                    duration = duri,
+                    loop = 0)
 
-def Clean():
-    for i in os.listdir('temp\\'):
-        os.remove('temp\\' + i)
-    os.rmdir('temp\\')
-
-def Main():
-    gifDir = 'Sticker2Gif\\temp\\'
-    if not os.path.exists(gifDir):
-        os.makedirs(gifDir)
-    
-    os.chdir(gifDir)
-
-    GetImg()
-    CutImg()
-    GifImg()
-    Clean()
-
-    input('\nDone!')
-
-Main()
+    def run(self):
+        self.cutImg()
+        self.gifImg(input('\nGIF name: '), input('\nDuration [from 1 to 100]: '))
+        Clean(self.path)
+        Log('\nDone!', self.log)
