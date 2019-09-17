@@ -39,3 +39,7 @@ tool.run()
 4- Voilà:
 
 ![alt text](https://i.imgur.com/b2bB9yH.gif)
+
+## Explaining Detection Technique
+
+![](https://raw.githubusercontent.com/elmoiv/sticker2gif/master/AI%20Explanation.png)
