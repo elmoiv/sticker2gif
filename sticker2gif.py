@@ -2,7 +2,7 @@ import os, ai
 from PIL import Image
 from tools import *
 
-class StickertoGif:
+class Maker:
     def __init__(self, img_path, save_path, log=False):
         self.img_path = img_path
         self.path = CheckPath(save_path)
