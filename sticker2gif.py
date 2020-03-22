@@ -59,7 +59,11 @@ class Maker:
                 if not (sum(colors[0][1]) == 0 and len(colors) == 1):
                     # minSticker.mode = RGBA so that we create a white background
                     # of same mode to avoid black background when converting to gif
-                    Image.alpha_composite(Image.new('RGBA', (x, y), (255, 255, 255)), minSticker).save(f'temp\\{n}.png')
+                    Image.alpha_composite(
+                        Image.new(
+                            'RGBA', (x, y), (255, 255, 255)), minSticker
+                            ).save(f'temp\\{n}.png'
+                            )
                     n += 1
                 
                 # Cordinates of the next image in same row
@@ -100,6 +104,10 @@ class Maker:
 
     def run(self):
         self.cutImg()
-        self.gifImg(input('\nGIF name: '), input('\nDuration [from 1 to 100]: '))
+        
+        self.gifImg(
+            input('\nGIF name: '),
+            input('\nDuration [from 1 to 100]: '))
+        
         Clean()
         Log('\nDone!', self.log)
