@@ -5,7 +5,7 @@ class Brain:
         self.image = image
         
     def detect(self, rgb_img, x, y, i):
-        for pixelX in range(0, x, 1):
+        for pixelX in range(0, x):
 
             # Pixel data will store sum of pixels colors in each line
             pixel_data = []
@@ -18,9 +18,10 @@ class Brain:
                 rgb_sum = sum(rgb_img.getpixel(point))
                 pixel_data.append(rgb_sum)
 
-            # If this line is transparent or contains colors
+            # Checks if this line is transparent or contains colors
             # If True we yield 1 else 0
             detect = sum(pixel_data)
+            
             if detect:
                 yield 1
             else:
