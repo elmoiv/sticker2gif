@@ -3,25 +3,25 @@ from PIL import Image
 from tools import *
 
 class Maker:
-    def __init__(self, img_path, save_path, log=False):
+    def __init__(self, img_path, log=False):
         self.img_path = img_path
-        self.path = CheckPath(save_path)
-        self.log = log
-        Clean(self.path)
+        self.path = 'Saved_Sticker'
+        
+        os.makedirs(self.path, exist_ok=1)
         os.chdir(self.path)
+       
+        self.log = log
+        Clean()
+        
         os.makedirs('temp', exist_ok=True)
-        os.chdir('temp')
 
     def getImg(self):
-        choice = PathOrUrl(self.img_path)
-        img = None
-        if choice:
+        if PathOrUrl(self.img_path):
             img = self.img_path
-        elif choice is False:
+        else:
             Log('\nDownloading...', self.log)
             img = Download(self.img_path)
-        else:
-            raise Exception('Invalid Image input!')
+        
         return Image.open(img)
             
 
@@ -37,7 +37,7 @@ class Maker:
         Log('\nRows: {}, Columns: {}'.format(rows, columns), self.log)
 
         # Getting the fixed size of each mini image
-        x, y = round(size[0]/columns), round(size[1]/rows)
+        x, y = round(size[0] / columns), round(size[1] / rows)
 
         # Setting up cordinates
         cd = (0, 0, x, y)
@@ -59,7 +59,7 @@ class Maker:
                 if not (sum(colors[0][1]) == 0 and len(colors) == 1):
                     # minSticker.mode = RGBA so that we create a white background
                     # of same mode to avoid black background when converting to gif
-                    Image.alpha_composite(Image.new('RGBA', (x, y), (255, 255, 255)), minSticker).save(str(n) + '.png')
+                    Image.alpha_composite(Image.new('RGBA', (x, y), (255, 255, 255)), minSticker).save(f'temp\\{n}.png')
                     n += 1
                 
                 # Cordinates of the next image in same row
@@ -69,21 +69,18 @@ class Maker:
             cd = (0, cd[1] + y, x, cd[3] + y)
 
     def gifImg(self, name, duration):
-        pics = [i for i in os.listdir() if i.split('.')[0].isdecimal()]
+        pics = [i for i in os.listdir('temp') if i.split('.')[0].isdecimal()]
         
         # Sorting pics ascendingly
         pics.sort(key = lambda x: int(x.split('.')[0]))
 
         frames = []
         for i in pics:
-            frame = Image.open(i)
+            frame = Image.open(opj('temp', i))
             frames.append(frame)
-        
-        # Return to main dic
-        os.chdir(os.getcwd()[:-4])
 
         # Correct any incorrect input
-        name = Rename(name, self.path)
+        name = Rename(name)
 
         # Catch Stupid Inputs
         try:
@@ -104,5 +101,5 @@ class Maker:
     def run(self):
         self.cutImg()
         self.gifImg(input('\nGIF name: '), input('\nDuration [from 1 to 100]: '))
-        Clean(self.path)
+        Clean()
         Log('\nDone!', self.log)
