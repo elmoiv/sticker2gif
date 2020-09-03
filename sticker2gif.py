@@ -81,7 +81,7 @@ class Maker:
         frames = []
         for i in pics:
             frame = Image.open(opj('temp', i))
-            frames.append(frame)
+            frames.append(frame.copy())
 
         # Correct any incorrect input
         name = Rename(name)
