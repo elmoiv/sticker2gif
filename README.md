@@ -1,6 +1,6 @@
 # sticker2gif
 
-A tool to download Facebook Messenger Stickers and convert them into gif.
+A tool to download Facebook Messenger Stickers and convert them into gif using basic AI.
 
 
 ## Dependencies
