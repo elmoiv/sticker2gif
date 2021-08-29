@@ -13,9 +13,7 @@ A tool to download Facebook Messenger Stickers and convert them into gif using b
 from sticker2gif import Maker
 
 url = input('URL: ')
-
 tool = Maker(url, log=True)
-
 tool.run()
 ```
 
